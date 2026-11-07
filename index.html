@@ -241,7 +241,7 @@ label{font:600 12px var(--f-ui);letter-spacing:.06em;text-transform:uppercase;co
 /* ============================================================ state */
 const $=s=>document.querySelector(s);
 const store={get(k,d){try{const v=localStorage.getItem('gy_'+k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem('gy_'+k,JSON.stringify(v))}catch(e){}}};
-const S={lang:store.get('lang','en'),sound:true,mus:store.get('mus',{on:true,v:.7}),sfx:store.get('sfx',{on:true,v:.8}),scene:null,mode:'view'};
+const S={tilt:store.get('tilt',{on:true,sens:1}),lang:store.get('lang','en'),sound:true,mus:store.get('mus',{on:true,v:.7}),sfx:store.get('sfx',{on:true,v:.8}),scene:null,mode:'view'};
 const tt=(en,zh)=>S.lang==='en'?en:zh;
 const isTouch=matchMedia('(pointer:coarse)').matches;
 const INCENSE_MS=30*60*1000; // a real joss stick burns about half an hour
@@ -297,9 +297,9 @@ const SCENES={
  courtyard:{img:'scenes/courtyard.jpg',vid:'scenes/courtyard_sky.mp4',music:['audio/om-mani-padme-hum.mp3',.28],zh:'观音堂 · 外院',en:'Temple Courtyard',
   hots:[{x:50.5,y:38,k:'enter',en:'Enter the hall',zh:'入殿'},{x:50.5,y:86,k:'burner',en:'Incense urn',zh:'香炉'},{x:85.8,y:60,k:'lamp',en:'Lamp of fire',zh:'灯火'},{x:95,y:74,k:'joss',en:'Joss sticks',zh:'香'}],
   vsmoke:[[50.5,68.5,.2,.85],[49,69,.14,.6]],smoke:[[50.5,66,3]],glow:[[85.8,68.2,30,'255,170,70'],[30,62,12,'255,160,70'],[70,62,12,'255,160,70'],[50.5,66,24,'255,120,40']],look:[0,.1]},
- tiangong:{img:'scenes/tiangong.jpg',vid:'scenes/tiangong_sky.mp4',music:['audio/om-mani-padme-hum.mp3',.15],vsmoke:[[50.5,53,.07,.8]],zh:'拜天公',en:'Offering to Heaven',
+ tiangong:{img:'scenes/tiangong.jpg',vid:'scenes/tiangong_sky.mp4',mask:'scenes/tiangong_m.jpg',flames:[[66.5,54.7,1.9],[72.45,54.9,1.9]],music:['audio/om-mani-padme-hum.mp3',.15],vsmoke:[[50.5,55,.075,.9],[49.6,55.4,.05,.6]],zh:'拜天公',en:'Offering to Heaven',
   hots:[{x:50.5,y:42,k:'info:tiangong',en:'Tian Gong censer',zh:'天公炉'}],
-  smoke:[[50.5,53,1.5]],glow:[[65.8,54.5,12,'255,150,60'],[71.8,54.5,12,'255,150,60']],look:[0,0]},
+  smoke:[[50.5,54.5,2]],glow:[[66.5,54,12,'255,150,60'],[72.45,54.2,12,'255,150,60'],[50.5,56,18,'255,110,40']],look:[0,0]},
  hall:{img:'scenes/hall.jpg',music:['audio/om-mani-padme-hum.mp3',.95],vsmoke:[[41.2,61,.045,.7]],zh:'大殿',en:'Main Hall',
   hots:[{x:50,y:46,k:'info:cundi',en:'Cundi Guan Yin',zh:'准提观音'},{x:49,y:12,k:'info:kings',en:'Heavenly Kings',zh:'四大天王',s:1},{x:30,y:43,k:'info:damo',en:'Bodhidharma',zh:'达摩',s:1},{x:71,y:46,k:'info:huatuo',en:'Hua Tuo',zh:'华佗',s:1},{x:17,y:44,k:'info:shakyamuni',en:'Shakyamuni',zh:'释迦',s:1},
    {x:90,y:38,k:'lamps',en:'Light a lamp',zh:'光明灯'},{x:12,y:74,k:'kaucim',en:'Draw a lot',zh:'求签'},{x:63,y:80,k:'kneel',en:'Kneel & pray',zh:'拜垫'},{x:42,y:60,k:'donate',en:'Merit box',zh:'功德箱'}],
@@ -382,11 +382,11 @@ function stick(g,bx,by,ang,hl,cl,burn,st,t,w,seed=0){
 const V={cv:$('#gl'),fx:$('#fx'),ar:16/9,w:0,h:0,vw:0,vh:0,cur:{x:0,y:0},base:{x:0,y:0},mouse:{x:0,y:0},gyro:{x:0,y:0},extra:{x:0,y:0},L:{x:0,y:0},
  zoom:1,zt:1,zo:{x:0,y:0},fade:0,fadeT:1,smoke:new Smoke(),dust:[],dep:null,K:.028,tx:0,ty:0,hs:[],vid:null,hasVid:0,gyroOn:false,dpr:1};
 const VS='attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}';
-const FS=`precision highp float;uniform sampler2D img,dep,vid;uniform vec2 res,scn,trn,look,zo;uniform float zoom,hasVid,K,fade,t;
+const FS=`precision highp float;uniform sampler2D img,dep,vid,msk;uniform float hasMsk;uniform vec2 res,scn,trn,look,zo;uniform float zoom,hasVid,K,fade,t;
 void main(){vec2 s=vec2(gl_FragCoord.x,res.y-gl_FragCoord.y);s=zo+(s-zo)/zoom;vec2 uv=(s-trn)/scn;vec2 off=look*vec2(K,K*.7);
 float d=texture2D(dep,clamp(uv,0.,1.)).r;vec2 u=uv+off*(d-.45);d=texture2D(dep,clamp(u,0.,1.)).r;u=clamp(uv+off*(d-.45),0.,1.);
 vec3 c=texture2D(img,u).rgb;
-if(hasVid>.5){float sky=smoothstep(.17,.04,d);if(sky>0.){c=mix(c,texture2D(vid,u).rgb,sky);}}
+if(hasVid>.5){float sky=smoothstep(.17,.04,d);if(hasMsk>.5)sky=max(sky,texture2D(msk,u).r);if(sky>0.){c=mix(c,texture2D(vid,u).rgb,sky);}}
 vec2 q=gl_FragCoord.xy/res-.5;c*=1.-dot(q,q)*.55;
 gl_FragColor=vec4(c*fade,1.);}`;
 let GL=null;
@@ -394,20 +394,20 @@ function initGL(){const gl=V.cv.getContext('webgl',{antialias:false,alpha:false,
  const sh=(t,s)=>{const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))console.error(gl.getShaderInfoLog(o));return o};
  const pr=gl.createProgram();gl.attachShader(pr,sh(gl.VERTEX_SHADER,VS));gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,FS));gl.linkProgram(pr);gl.useProgram(pr);
  const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,1,1]),gl.STATIC_DRAW);const loc=gl.getAttribLocation(pr,'p');gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
- const U={};['img','dep','vid','res','scn','trn','look','zo','zoom','hasVid','K','fade','t'].forEach(n=>U[n]=gl.getUniformLocation(pr,n));
+ const U={};['img','dep','vid','msk','hasMsk','res','scn','trn','look','zo','zoom','hasVid','K','fade','t'].forEach(n=>U[n]=gl.getUniformLocation(pr,n));
  const tex=()=>{const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);[[gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE],[gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE],[gl.TEXTURE_MIN_FILTER,gl.LINEAR],[gl.TEXTURE_MAG_FILTER,gl.LINEAR]].forEach(([a,v])=>gl.texParameteri(gl.TEXTURE_2D,a,v));gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,1,1,0,gl.RGB,gl.UNSIGNED_BYTE,new Uint8Array([0,0,0]));return t};
- const T3=[tex(),tex(),tex()];gl.uniform1i(U.img,0);gl.uniform1i(U.dep,1);gl.uniform1i(U.vid,2);
+ const T3=[tex(),tex(),tex(),tex()];gl.uniform1i(U.img,0);gl.uniform1i(U.dep,1);gl.uniform1i(U.vid,2);gl.uniform1i(U.msk,3);
  return{gl,U,T3,max:gl.getParameter(gl.MAX_TEXTURE_SIZE)}}
 function upload(unit,src){const{gl,T3}=GL;gl.activeTexture(gl.TEXTURE0+unit);gl.bindTexture(gl.TEXTURE_2D,T3[unit]);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGB,gl.RGB,gl.UNSIGNED_BYTE,src)}
 function loadImg(src){return new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src=src})}
 const CACHE={};
 async function loadScene(id){const sc=SCENES[id];
- if(!CACHE[id]){const[im,dp]=await Promise.all([loadImg(sc.img),loadImg(sc.img.replace('.jpg','_d.jpg'))]);
+ if(!CACHE[id]){const[im,dp,mk]=await Promise.all([loadImg(sc.img),loadImg(sc.img.replace('.jpg','_d.jpg')),sc.mask?loadImg(sc.mask):null]);
   let src=im;if(GL&&im&&Math.max(im.width,im.height)>GL.max){const s=GL.max/Math.max(im.width,im.height),c=document.createElement('canvas');c.width=im.width*s|0;c.height=im.height*s|0;c.getContext('2d').drawImage(im,0,0,c.width,c.height);src=c}
   const dc=document.createElement('canvas');dc.width=256;dc.height=Math.round(256*(im?im.height/im.width:.5625));const dg=dc.getContext('2d');if(dp)dg.drawImage(dp,0,0,dc.width,dc.height);
-  CACHE[id]={im,src,dp,dep:{w:dc.width,h:dc.height,a:dg.getImageData(0,0,dc.width,dc.height).data}}}
+  CACHE[id]={im,src,dp,mk,dep:{w:dc.width,h:dc.height,a:dg.getImageData(0,0,dc.width,dc.height).data}}}
  const C=CACHE[id];V.ar=C.im?C.im.width/C.im.height:16/9;V.dep=C.dep;V.im=C.im;
- if(GL){upload(0,C.src);if(C.dp)upload(1,C.dp)}
+ if(GL){upload(0,C.src);if(C.dp)upload(1,C.dp);if(C.mk)upload(3,C.mk);GL.gl.uniform1f(GL.U.hasMsk,C.mk?1:0)}
  if(V.vid){V.vid.pause();V.vid.removeAttribute('src');V.vid.load();V.vid=null}V.hasVid=0;
  if(sc.vid){const v=document.createElement('video');v.muted=true;v.loop=true;v.playsInline=true;v.setAttribute('playsinline','');v.setAttribute('muted','');v.src=v.canPlayType('video/mp4; codecs="avc1.42E01E"')?sc.vid:sc.vid.replace('.mp4','.webm');v.play().catch(()=>{});V.vid=v}}
 function layout(){V.vw=innerWidth;V.vh=innerHeight;const over=1.26;V.h=Math.max(V.vh*over,V.vw*over/V.ar);V.w=V.h*V.ar;V.dpr=Math.min(2,devicePixelRatio||1);
@@ -476,8 +476,15 @@ addEventListener('pointermove',e=>{if(!drag||stageOn)return;V.base.x=clamp(drag.
 addEventListener('pointerup',()=>drag=null);
 let g0=null;
 function onOrient(e){if(e.beta==null)return;V.gyroOn=true;const a=(screen.orientation&&screen.orientation.angle)||window.orientation||0;let gx=e.gamma,gy=e.beta;if(a===90){gx=e.beta;gy=-e.gamma}else if(a===-90||a===270){gx=-e.beta;gy=e.gamma}
- if(!g0)g0={x:gx,y:gy};let dx=gx-g0.x,dy=gy-g0.y;if(dx>90)dx-=180;if(dx<-90)dx+=180;V.gyro.x=clamp(dx/22,-1.2,1.2);V.gyro.y=clamp(dy/18,-1.2,1.2)}
-async function enableMotion(){try{if(window.DeviceOrientationEvent&&typeof DeviceOrientationEvent.requestPermission==='function'){const r=await DeviceOrientationEvent.requestPermission();if(r!=='granted')return}addEventListener('deviceorientation',onOrient)}catch(e){}
+ if(!S.tilt.on){V.gyro.x=V.gyro.y=0;return}
+ const now=performance.now();if(!g0){g0={x:gx,y:gy};gf={x:gx,y:gy};gt=now;return}
+ let jx=gx-gf.x;if(jx>90)gx-=180;if(jx<-90)gx+=180;if(Math.abs(gx-gf.x)>45)return; // ignore wrap glitches near vertical
+ const dt=Math.min(.1,(now-gt)/1000);gt=now;const k=1-Math.pow(.02,dt);gf.x+=(gx-gf.x)*k;gf.y+=(gy-gf.y)*k; // smooth sensor noise
+ const still=Math.abs(gx-gf.x)<.6&&Math.abs(gy-gf.y)<.6;if(still){const r=1-Math.pow(.85,dt);g0.x+=(gf.x-g0.x)*r;g0.y+=(gf.y-g0.y)*r} // slowly re-centre when the phone is held still
+ const dz=v=>Math.sign(v)*Math.max(0,Math.abs(v)-1.5),rng=30/S.tilt.sens;
+ V.gyro.x=clamp(dz(gf.x-g0.x)/rng,-1.1,1.1);V.gyro.y=clamp(dz(gf.y-g0.y)/(rng*.85),-1.1,1.1)}
+let gf=null,gt=0;function recenterTilt(){g0=null;V.gyro={x:0,y:0}}
+async function enableMotion(){try{if(window.DeviceOrientationEvent&&typeof DeviceOrientationEvent.requestPermission==='function'){const r=await DeviceOrientationEvent.requestPermission();if(r!=='granted')return}if(!window.__ori){window.__ori=1;addEventListener('deviceorientation',onOrient)}}catch(e){}
  try{if(window.DeviceMotionEvent&&typeof DeviceMotionEvent.requestPermission==='function')await DeviceMotionEvent.requestPermission()}catch(e){}
  addEventListener('devicemotion',e=>{const a=e.acceleration||{};const m=Math.hypot(a.x||0,a.y||0,a.z||0);if(m>3)shakeBoost+=m*0.6})}
 let shakeBoost=0;
@@ -493,12 +500,18 @@ function renderActions(){const a=$('#actions');a.innerHTML='';const s=S.scene;le
  if(s==='zodiac'){a.append(act('拜本命佛','Pray to my guardian',()=>openZodiacPicker(true)),act('禅修室','Meditation room',()=>go('medroom'),1),act('三圣殿','Three Saints hall',()=>go('level2'),1),act('下楼','Main hall',()=>go('hall'),1))}
  $('#hint').textContent=hint}
 function hud(on){$('#hudTop').hidden=!on;$('#hudBot').hidden=!on}
-function refreshLang(){$('#langBtn').textContent=S.lang==='en'?'中文':'EN';$('#soundBtn').textContent=(S.mus.on||S.sfx.on)?tt('Sound','声音'):tt('Muted','静音');$('#lotsBtn').textContent=tt('My lots','我的签');$('#musicBtn').textContent=tt('Music','音乐');
+function refreshLang(){$('#langBtn').textContent=S.lang==='en'?'中文':'EN';$('#soundBtn').textContent=tt('Settings','设置');$('#lotsBtn').textContent=tt('My lots','我的签');$('#musicBtn').textContent=tt('Music','音乐');
  $('#startP').textContent=tt('Offer incense, pray, draw a Guan Yin lot and light a lamp. Tilt your phone or move your mouse to look around.','上香、礼佛、求观音灵签、点光明灯。倾斜手机或移动鼠标即可环顾寺庙。');if(S.scene){renderHots();renderActions()}}
 $('#langBtn').onclick=$('#langBtn2').onclick=()=>{S.lang=S.lang==='en'?'zh':'en';store.set('lang',S.lang);refreshLang()};
 $('#soundBtn').onclick=openMixer;
 function openMixer(){AU.init();const row=(k,zh,en)=>`<b>${tt(en,zh)}</b><input type="range" id="v_${k}" min="0" max="1" step="0.05" value="${S[k].v}" aria-label="${en} volume"><button class="tog" id="t_${k}" aria-pressed="${S[k].on}">${S[k].on?tt('On','开'):tt('Off','关')}</button>`;
- sheet(`<button class="x" aria-label="Close">×</button><h2>${tt('Sound','声音')}</h2><p>${tt('Music is the chanting and temple music in each hall. Effects are bells, wooden fish, fire and voices.','音乐为各殿的诵经与梵乐；音效为钟声、木鱼、火声与祝福语音。')}</p><div class="mix">${row('mus','音乐','Music')}${row('sfx','音效','Effects')}</div>`,s=>{
+ sheet(`<button class="x" aria-label="Close">×</button><h2>${tt('Sound','声音')}</h2><p>${tt('Music is the chanting and temple music in each hall. Effects are bells, wooden fish, fire and voices.','音乐为各殿的诵经与梵乐；音效为钟声、木鱼、火声与祝福语音。')}</p><div class="mix">${row('mus','音乐','Music')}${row('sfx','音效','Effects')}</div>
+ <h2 style="margin-top:22px">${tt('Phone tilt','手机倾斜')}</h2><p>${tt('Tilt your phone to look around. Lower the sensitivity if the view moves too much, or turn tilt off and drag with your finger instead.','倾斜手机即可环顾四周。若画面移动太多，可调低灵敏度，或关闭倾斜改用手指拖动。')}</p>
+ <div class="mix"><b>${tt('Sensitivity','灵敏度')}</b><input type="range" id="v_tilt" min="0.3" max="2" step="0.1" value="${S.tilt.sens}" aria-label="Tilt sensitivity"><button class="tog" id="t_tilt" aria-pressed="${S.tilt.on}">${S.tilt.on?tt('On','开'):tt('Off','关')}</button></div>
+ <div class="row"><button class="btn ghost" id="rc">${tt('Recenter view','视角回正')}</button></div>`,s=>{
+  s.querySelector('#v_tilt').oninput=e=>{S.tilt.sens=+e.target.value;store.set('tilt',S.tilt)};
+  s.querySelector('#t_tilt').onclick=async e=>{S.tilt.on=!S.tilt.on;store.set('tilt',S.tilt);e.target.setAttribute('aria-pressed',S.tilt.on);e.target.textContent=S.tilt.on?tt('On','开'):tt('Off','关');recenterTilt();if(S.tilt.on)await enableMotion()};
+  s.querySelector('#rc').onclick=()=>{recenterTilt();V.base={x:0,y:0};toast(tt('View recentred','视角已回正'))};
   ['mus','sfx'].forEach(k=>{s.querySelector('#v_'+k).oninput=e=>{S[k].v=+e.target.value;store.set(k,S[k]);AU.applyMix()};s.querySelector('#t_'+k).onclick=e=>{S[k].on=!S[k].on;store.set(k,S[k]);e.target.setAttribute('aria-pressed',S[k].on);e.target.textContent=S[k].on?tt('On','开'):tt('Off','关');AU.applyMix();refreshLang()}})})}
 $('#lotsBtn').onclick=openMyLots;
 function toast(m,ms=2600){const d=document.createElement('div');d.className='toast';d.textContent=m;document.body.appendChild(d);setTimeout(()=>d.remove(),ms)}
@@ -849,7 +862,7 @@ function drawReaderFx(dt){const c=$('#reader .rfx');const W=innerWidth,H=innerHe
  const iw=MGY.naturalWidth,ih=MGY.naturalHeight,s=Math.max(W/iw,H/ih),ox=(W-iw*s)*.5,oy=(H-ih*s)*.3,P=(u,v)=>({x:ox+u*iw*s,y:oy+v*ih*s});
  startSmoke();const b=P(.5,.607),w=.11*iw*s,hh=w*16/9;g.globalCompositeOperation='lighter';
  SMV.forEach((v,j)=>{if(v.readyState<2||!v.duration)return;g.globalAlpha=.75*Math.sin(Math.PI*v.currentTime/v.duration);g.drawImage(v,b.x-w/2+(j?w*.06:0),b.y-hh*.98,w*(j?.9:1),hh*(j?.95:1))});
- g.globalAlpha=1;const f=P(.684,.593);flame(g,f.x,f.y,.024*ih*s,T,2);g.globalCompositeOperation='source-over'}
+ g.globalAlpha=1;const f=P(.6845,.611);flame(g,f.x,f.y,.017*ih*s,T,2);g.globalCompositeOperation='source-over'}
 function bookById(id){return BOOKS.find(b=>b.id===id)}
 function spine(b,i){const h=[.16,.165,.15,.155,.14,.15,.165,.16][i],w=[.036,.044,.032,.034,.03,.034,.036,.038][i];return{h,w}}
 function openShelf(){closeSheet();AU.init();const v=$('#shelfv');v.hidden=false;hud(false);$('#closeBtn').hidden=false;S.mode='act';
