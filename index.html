@@ -308,7 +308,7 @@ const SCENES={
   hots:[{x:50,y:40,k:'saint:1',en:'Amitābha',zh:'阿弥陀佛'},{x:38.5,y:41,k:'saint:0',en:'Guan Yin',zh:'观音'},{x:61.5,y:41,k:'saint:2',en:'Mahāsthāmaprāpta',zh:'大势至'},{x:20,y:44,k:'saint:3',en:'Shakyamuni',zh:'释迦牟尼佛'},
    {x:32,y:89,k:'scush:0',en:'Kneel · Guan Yin',zh:'拜垫 · 观音'},{x:50,y:89,k:'scush:1',en:'Kneel · Amitābha',zh:'拜垫 · 阿弥陀佛'},{x:68,y:89,k:'scush:2',en:'Kneel · Mahāsthāma',zh:'拜垫 · 大势至'},{x:10.5,y:77,k:'scush:3',en:'Kneel · Shakyamuni',zh:'拜垫 · 释迦'},
    {x:89,y:42,k:'info:whiterobe',en:'White-Robed',zh:'白衣观音',s:1},{x:74,y:50,k:'info:medicine',en:'Medicine Buddha',zh:'药师佛',s:1}],
-  vsmoke:[[50.3,58.5,.03,.55]],glow:[[44.3,58.5,9,'255,190,90'],[55.2,58.5,9,'255,190,90'],[50,24,60,'255,200,120']],dust:1,look:[0,0]},
+  vsmoke:[[50.34,60.9,.03,.65]],flames:[[44.7,58.96,1.6],[55.68,58.96,1.6]],glow:[[44.7,58.3,10,'255,180,80'],[55.68,58.3,10,'255,180,80'],[50,24,60,'255,200,120']],dust:1,look:[0,0]},
  medroom:{img:'scenes/medroom.jpg',music:['audio/meditation.mp3',.7],zh:'二楼 · 禅修室',en:'Meditation Room · L2',
   hots:[{x:50,y:42,k:'info:medgy',en:'White Jade Guan Yin',zh:'白玉观音'},{x:50,y:80,k:'medkneel',en:'Kneel & read',zh:'跪坐诵经'},{x:86,y:42,k:'shelf',en:'Mantra books',zh:'经书架'}],
   vsmoke:[[50.17,60.8,.034,.75]],flames:[[54.77,60.95,1.5]],glow:[[54.77,60.2,12,'255,170,80'],[50,20,40,'255,190,110']],dust:1,look:[0,.1]},
@@ -589,7 +589,7 @@ const GNAME=[['南无大悲观世音菩萨','Namo Great Compassion Guan Yin'],['
 /* deities you can kneel before: image, info key, name to recite, focal x */
 const DEITY={
  hall:[{img:'deity/cundi.jpg',k:'cundi',n:['南无准提菩萨','Namo Cundī Bodhisattva'],fx:.45},{img:'deity/guanyin.jpg',k:'whiterobe',n:['南无观世音菩萨','Namo Guan Shi Yin Bodhisattva'],fx:.3},{img:'deity/damo.jpg',k:'damo',n:['敬礼达摩祖师','Homage to Bodhidharma'],fx:.68},{img:'deity/huatuo.jpg',k:'huatuo',n:['敬礼华佗仙师','Homage to Hua Tuo, the healer'],fx:.62},{img:'deity/kings.jpg',k:'kings',n:['南无四大天王护法','Namo the Four Heavenly Kings'],fx:.55},{img:'deity/cundi_wide.jpg',k:'cundi',n:['南无大悲观世音菩萨','Namo Great Compassion Guan Yin'],fx:.5}],
- saints:[{img:'deity/gy_willow.jpg',k:'gy_willow',n:['南无观世音菩萨','Namo Guan Shi Yin Bodhisattva'],fx:.62},{img:'deity/amitabha.jpg',k:'amitabha',n:['南无阿弥陀佛','Namo Amitābha Buddha'],fx:.5},{img:'deity/mahasthama.jpg',k:'mahasthama',n:['南无大势至菩萨','Namo Mahāsthāmaprāpta Bodhisattva'],fx:.38},{img:'deity/shakyamuni.jpg',k:'shakyamuni',n:['南无本师释迦牟尼佛','Namo Shakyamuni Buddha, our Original Teacher'],fx:.5}],
+ saints:[{img:'deity/gy_willow.jpg',k:'gy_willow',n:['南无观世音菩萨','Namo Guan Shi Yin Bodhisattva'],fx:.5,fxs:{f:[[.802,.593,.02]]}},{img:'deity/amitabha.jpg',k:'amitabha',n:['南无阿弥陀佛','Namo Amitābha Buddha'],fx:.5,fxs:{s:[[.5,.622,.15]],f:[[.278,.588,.02],[.714,.588,.02]]}},{img:'deity/mahasthama.jpg',k:'mahasthama',n:['南无大势至菩萨','Namo Mahāsthāmaprāpta Bodhisattva'],fx:.59,fxs:{f:[[.264,.638,.02]]}},{img:'deity/shakyamuni.jpg',k:'shakyamuni',n:['南无本师释迦牟尼佛','Namo Shakyamuni Buddha, our Original Teacher'],fx:.5,fxs:{s:[[.494,.83,.16]],f:[[.068,.782,.022],[.79,.782,.022]]}}],
  guard:GUARD.map(([k],i)=>({img:GIMG[i],k,n:GNAME[i],fx:.5}))
 };
 let handCache={b:-1,c:null,emb:[]};
@@ -603,7 +603,10 @@ function handsFrame(burn){if(Math.abs(handCache.b-burn)<.0015&&handCache.c)retur
  emb.forEach(e=>{g.strokeStyle='#8f8a83';g.lineWidth=8;g.beginPath();g.moveTo(e.x,e.y);g.lineTo(e.x+e.dx*7,e.y+e.dy*7);g.stroke();g.fillStyle='#d6d0c6';g.beginPath();g.arc(e.x,e.y+1,4,0,7);g.fill()});
  handCache={b:burn,c,emb};return handCache}
 function coverDraw(g,im,fx,lx,ly,z=1.08){const s=Math.max(SW/im.naturalWidth,SH/im.naturalHeight)*z,w=im.naturalWidth*s,h=im.naturalHeight*s;
- let x=SW/2-fx*w;x=clamp(x,SW-w,0);const y=(SH-h)/2;g.drawImage(im,x-lx*(w-SW)*.25-lx*8,y-ly*(h-SH)*.4,w,h)}
+ let x=SW/2-fx*w;x=clamp(x,SW-w,0);const y=(SH-h)/2;const X=x-lx*(w-SW)*.25-lx*8,Y=y-ly*(h-SH)*.4;g.drawImage(im,X,Y,w,h);return{x:X,y:Y,w,h}}
+function drawDeityFx(g,r,d,dt){if(!r||!d.fxs)return;startSmoke();g.save();g.globalCompositeOperation='lighter';
+ (d.fxs.s||[]).forEach(([u,v,wf])=>{const w=wf*r.w,hh=w*16/9,x=r.x+u*r.w,y=r.y+v*r.h;SMV.forEach((vv,j)=>{if(vv.readyState<2||!vv.duration)return;g.globalAlpha=.7*Math.sin(Math.PI*vv.currentTime/vv.duration);g.drawImage(vv,x-w/2+(j?w*.06:0),y-hh*.98,w*(j?.9:1),hh*(j?.95:1))})});
+ g.globalAlpha=1;(d.fxs.f||[]).forEach(([u,v,hf],i)=>flame(g,r.x+u*r.w,r.y+v*r.h,hf*r.h,T,i*5+1));g.restore()}
 /* where: scene for incense prayer; dl: {set:'hall'|'saints'|'guard', i} for kneeling before a deity */
 async function beginPray(where,withIncense=true,dl){closeSheet();closeStage();
  const deity=!!dl;let D=null;
@@ -627,7 +630,7 @@ async function beginPray(where,withIncense=true,dl){closeSheet();closeStage();
   if(deity){st.slide=lerp(st.slide,0,1-Math.pow(.0008,dt));const lx=V.gyro.x+V.mouse.x+st.lr,ly=V.gyro.y+V.mouse.y+b*.8;
    const cur=bgImg(D[st.i].img);g.fillStyle='#120806';g.fillRect(0,0,SW,SH);
    if(Math.abs(st.slide)>.01){const pi=(st.i-Math.sign(st.slide)+D.length)%D.length,prev=bgImg(D[pi].img);g.save();g.translate(-st.slide*SW*0,0);g.globalAlpha=Math.abs(st.slide);if(prev.complete)coverDraw(g,prev,D[pi].fx,lx-st.slide*.0,ly);g.restore()}
-   if(cur.complete&&cur.naturalWidth){g.save();g.globalAlpha=1-Math.abs(st.slide);g.translate(st.slide*SW*.35,0);coverDraw(g,cur,D[st.i].fx,lx,ly,1.08+b*.05);g.restore()}
+   if(cur.complete&&cur.naturalWidth){g.save();g.globalAlpha=1-Math.abs(st.slide);g.translate(st.slide*SW*.35,0);const rr=coverDraw(g,cur,D[st.i].fx,lx,ly,1.08+b*.05);drawDeityFx(g,rr,D[st.i],dt);g.restore()}
    g.globalCompositeOperation='lighter';glow(g,SW*.5,SH*.68,SW*.55*(.9+.08*Math.sin(T*7)+.04*Math.sin(T*19)),'255,160,70',.28);g.globalCompositeOperation='source-over'}
   else{V.extra.y=b*.55;V.extra.x=st.lr*.4}
   const grd=g.createLinearGradient(0,SH*.45,0,SH);grd.addColorStop(0,'rgba(0,0,0,0)');grd.addColorStop(1,'rgba(0,0,0,.5)');g.fillStyle=grd;g.fillRect(0,0,SW,SH);
