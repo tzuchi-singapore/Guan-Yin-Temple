@@ -116,7 +116,8 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 .cvf .lotus{position:absolute;right:10%;top:36%;width:34%;opacity:.8}
 .cvr.light{color:#7a5a20}.cvr.light .cvf .ct{background:#fff}
 #reader{position:fixed;inset:0;z-index:30;overflow:hidden;background:#120806}
-.rbg{position:absolute;inset:-4%;background:url("deity/med_gy.jpg") 50% 30%/cover;animation:breathe 16s ease-in-out infinite alternate;filter:brightness(.85)}
+.rbg{position:absolute;inset:0;background:url("deity/med_gy.jpg") 50% 30%/cover;filter:brightness(.88)}
+.rfx{position:absolute;inset:0;width:100%;height:100%;mix-blend-mode:screen;pointer-events:none;z-index:1}
 @keyframes breathe{to{transform:scale(1.06)}}
 #reader::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 35%,rgba(10,4,3,.75));pointer-events:none}
 .rtools{position:absolute;z-index:3;right:max(12px,env(safe-area-inset-right,0px));top:calc(env(safe-area-inset-top,0px) + 12px);display:flex;gap:6px}
@@ -217,7 +218,7 @@ label{font:600 12px var(--f-ui);letter-spacing:.06em;text-transform:uppercase;co
 <div id="wall" hidden></div>
 <div id="shelfv" hidden><div class="shelfscroll"><div class="shelfbox"></div></div></div>
 <div id="cover" hidden></div>
-<div id="reader" hidden><div class="rbg"></div><div class="rtools"><button class="chip" id="bowlBtn">敲磬 · Strike bowl</button><button class="chip" id="rMusic">音乐 · Music</button></div><div class="rbook"></div></div>
+<div id="reader" hidden><div class="rbg"></div><canvas class="rfx"></canvas><div class="rtools"><button class="chip" id="bowlBtn">敲磬 · Strike bowl</button><button class="chip" id="rMusic">音乐 · Music</button></div><div class="rbook"></div></div>
 <div id="mbar" hidden role="region" aria-label="Music player"><button id="mbPlay" class="mbp">▶</button><div class="mbmid"><div id="mbTitle"></div><input type="range" id="mbSeek" min="0" max="1" step="0.1" value="0" aria-label="Seek"><div class="mbrow"><span id="mbTime">0:00 / 0:00</span><label for="mbVol" class="mbv">Vol</label><input type="range" id="mbVol" min="0" max="1" step="0.05"></div><select id="mbPick" hidden aria-label="Choose track"></select><div id="mbCredit" class="hint" hidden>Om Mani Padme Hum (Tibetan) · orangefreesounds.com · CC BY-NC-SA 3.0</div></div><button id="mbClose" aria-label="Hide music player">×</button></div>
 <div class="sheet" id="sheet" hidden></div>
 <div id="fade"></div>
@@ -304,12 +305,13 @@ const SCENES={
    {x:90,y:38,k:'lamps',en:'Light a lamp',zh:'光明灯'},{x:12,y:74,k:'kaucim',en:'Draw a lot',zh:'求签'},{x:63,y:80,k:'kneel',en:'Kneel & pray',zh:'拜垫'},{x:42,y:60,k:'donate',en:'Merit box',zh:'功德箱'}],
   smoke:[[41.2,61,1]],glow:[[37.5,58.5,10,'255,170,80'],[40.8,57,10,'255,170,80'],[24.5,57,9,'255,170,80'],[90,45,110,'255,180,80'],[5,45,50,'255,180,80'],[5,14,22,'255,120,60'],[14,13,18,'255,170,80'],[20.5,20,16,'255,170,80']],dust:1,look:[0,0]},
  level2:{img:'scenes/level2.jpg',music:['audio/namo-amituofo.mp3',.8],zh:'二楼 · 西方三圣殿',en:'Three Saints Hall · L2',
-  hots:[{x:83,y:33,k:'saint:1',en:'Amitābha',zh:'阿弥陀佛'},{x:74,y:38,k:'saint:0',en:'Guan Yin',zh:'观音'},{x:92,y:30,k:'saint:2',en:'Mahāsthāmaprāpta',zh:'大势至'},
-   {x:50,y:42,k:'info:shakyamuni',en:'Shakyamuni',zh:'释迦牟尼佛',s:1},{x:38,y:38,k:'info:whiterobe',en:'White-Robed',zh:'白衣观音',s:1},{x:63,y:38,k:'info:medicine',en:'Medicine Buddha',zh:'药师佛',s:1},{x:21,y:40,k:'info:watermoon',en:'Water-Moon',zh:'水月观音',s:1}],
-  glow:[[68.5,54,10,'255,190,90'],[73.5,57,10,'255,190,90']],dust:1,look:[.1,0]},
+  hots:[{x:50,y:40,k:'saint:1',en:'Amitābha',zh:'阿弥陀佛'},{x:38.5,y:41,k:'saint:0',en:'Guan Yin',zh:'观音'},{x:61.5,y:41,k:'saint:2',en:'Mahāsthāmaprāpta',zh:'大势至'},{x:20,y:44,k:'saint:3',en:'Shakyamuni',zh:'释迦牟尼佛'},
+   {x:32,y:89,k:'scush:0',en:'Kneel · Guan Yin',zh:'拜垫 · 观音'},{x:50,y:89,k:'scush:1',en:'Kneel · Amitābha',zh:'拜垫 · 阿弥陀佛'},{x:68,y:89,k:'scush:2',en:'Kneel · Mahāsthāma',zh:'拜垫 · 大势至'},{x:10.5,y:77,k:'scush:3',en:'Kneel · Shakyamuni',zh:'拜垫 · 释迦'},
+   {x:89,y:42,k:'info:whiterobe',en:'White-Robed',zh:'白衣观音',s:1},{x:74,y:50,k:'info:medicine',en:'Medicine Buddha',zh:'药师佛',s:1}],
+  vsmoke:[[50.3,58.5,.03,.55]],glow:[[44.3,58.5,9,'255,190,90'],[55.2,58.5,9,'255,190,90'],[50,24,60,'255,200,120']],dust:1,look:[0,0]},
  medroom:{img:'scenes/medroom.jpg',music:['audio/meditation.mp3',.7],zh:'二楼 · 禅修室',en:'Meditation Room · L2',
   hots:[{x:50,y:42,k:'info:medgy',en:'White Jade Guan Yin',zh:'白玉观音'},{x:50,y:80,k:'medkneel',en:'Kneel & read',zh:'跪坐诵经'},{x:86,y:42,k:'shelf',en:'Mantra books',zh:'经书架'}],
-  glow:[[54.6,61.6,10,'255,180,90'],[50,20,40,'255,190,110']],dust:1,look:[0,.1]},
+  vsmoke:[[50.17,60.8,.034,.75]],flames:[[54.77,60.95,1.5]],glow:[[54.77,60.2,12,'255,170,80'],[50,20,40,'255,190,110']],dust:1,look:[0,.1]},
  zodiac:{img:'scenes/zodiac.jpg',music:['audio/guanyin.mp3',.75],zh:'二楼 · 生肖本命佛殿',en:'Zodiac Guardian Hall · L2',
   hots:[{x:50,y:42,k:'info:cintamani',en:'Cintāmaṇicakra Guan Yin',zh:'如意轮观音'}].concat(GUARD.map(([k,x],i)=>({x,y:GY[i],k:'guard:'+i,en:INFO[k].en.split(' (')[0].split(',')[0],zh:INFO[k].zh,s:i>0&&i<7?1:0}))),
   glow:[[5,61,14,'255,190,110'],[15.5,58,10,'255,190,110'],[21,56.5,9,'255,190,110'],[69.5,55,9,'255,190,110'],[74.5,56.5,9,'255,190,110'],[85,58,10,'255,190,110'],[94.5,61,14,'255,190,110']],dust:1,look:[0,0]}
@@ -441,6 +443,7 @@ function frame(now){requestAnimationFrame(frame);const dt=clamp((now-last)/1000,
   if(!stageCover)drawFx(dt)}
  if(stageOn&&stageFn)stageFn(dt);
  tickIncense();
+ if(readerOn)drawReaderFx(dt);
  }catch(e){console.error(e)}}
 let stageCover=false;
 function drawFx(dt){const sc=SCENES[S.scene],g=V.fx.getContext('2d');g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,V.vw,V.vh);
@@ -450,6 +453,7 @@ function drawFx(dt){const sc=SCENES[S.scene],g=V.fx.getContext('2d');g.setTransf
  for(const p of V.smoke.p)if(!p.n){p.n=1;p.x*=1000;p.y*=1000*V.h/V.w;p.vx*=.8;p.vy*=.8}
  V.smoke.step(dt,T);
  drawVSmoke(g,sc);
+ (sc.flames||[]).forEach(([x,y,hp],i)=>{const q=toScreen(x/100,y/100);flame(g,q.x,q.y,hp/100*V.h*V.zoom,T,i*3)});
  const sx=V.w*V.zoom/1000;
  for(const p of V.smoke.p){const f=p.a/p.life,fi=Math.min(1,p.a*3);const q=toScreen(p.x/1000,p.y/(1000*V.h/V.w),p.d);g.globalAlpha=p.al*fi*(1-f)*(1-f)*V.fade;const s=p.s*sx;g.drawImage(SMOKE_SPR,q.x-s,q.y-s,s*2,s*2)}
  g.globalAlpha=1;g.globalCompositeOperation='lighter';
@@ -484,7 +488,7 @@ function renderActions(){const a=$('#actions');a.innerHTML='';const s=S.scene;le
  if(s==='courtyard'){a.append(act('上香','Offer incense',startIncense),act('参观寺庙','Visit temple',()=>go('hall',{zoomTo:[50,45]})),act('拜天公','Heaven terrace',()=>go('tiangong'),1));hint=tt('Tilt your phone or move the mouse to look around. Tap the glowing points.','倾斜手机或移动鼠标环顾四周，点击发光点。')}
  if(s==='tiangong'){a.append(act('上香','Offer incense',startIncense),act('返回外院','Courtyard',()=>go('courtyard'),1),act('入殿','Main hall',()=>go('hall'),1))}
  if(s==='hall'){a.append(act('光明灯','Light a lamp',openWall),act('拜佛','Kneel & pray',()=>pickCushion()),act('求签','Draw a lot',startKauCim),act('功德','Donate',openDonate),act('上二楼','Level 2',()=>go('zodiac'),1),act('外院','Courtyard',()=>go('courtyard'),1))}
- if(s==='level2'){a.append(act('拜三圣','Kneel & pray',()=>beginPray(null,false,{set:'saints',i:1})),act('拜本命佛','Pray to my guardian',()=>go('zodiac').then(()=>openZodiacPicker(true))),act('生肖殿','Zodiac hall',()=>go('zodiac'),1),act('禅修室','Meditation room',()=>go('medroom'),1),act('下楼','Main hall',()=>go('hall'),1))}
+ if(s==='level2'){a.append(act('拜佛','Kneel & pray',()=>beginPray(null,false,{set:'saints',i:1})),act('拜本命佛','Pray to my guardian',()=>go('zodiac').then(()=>openZodiacPicker(true))),act('生肖殿','Zodiac hall',()=>go('zodiac'),1),act('禅修室','Meditation room',()=>go('medroom'),1),act('下楼','Main hall',()=>go('hall'),1))}
  if(s==='medroom'){a.append(act('经书','Mantra books',openShelf),act('跪坐诵经','Kneel & read',openShelf),act('音乐','Music',()=>{$('#mbar').hidden=false;renderMbar()}),act('三圣殿','Three Saints',()=>go('level2'),1),act('生肖殿','Zodiac hall',()=>go('zodiac'),1),act('下楼','Main hall',()=>go('hall'),1))}
  if(s==='zodiac'){a.append(act('拜本命佛','Pray to my guardian',()=>openZodiacPicker(true)),act('禅修室','Meditation room',()=>go('medroom'),1),act('三圣殿','Three Saints hall',()=>go('level2'),1),act('下楼','Main hall',()=>go('hall'),1))}
  $('#hint').textContent=hint}
@@ -503,7 +507,7 @@ function toast(m,ms=2600){const d=document.createElement('div');d.className='toa
 function sheet(html,onMount){const s=$('#sheet');s.innerHTML=`<div class="card" role="dialog">${html}</div>`;s.hidden=false;const x=s.querySelector('.x');if(x)x.onclick=closeSheet;onMount&&onMount(s)}
 function closeSheet(){$('#sheet').hidden=true;$('#sheet').innerHTML=''}
 function info(k){const d=INFO[k];sheet(`<button class="x" aria-label="Close">×</button><h2>${d.zh}</h2><h3>${d.en}</h3><p class="${S.lang==='zh'?'zhp':''}">${tt(d.t[0],d.t[1])}</p>`)}
-function hot(k,o){AU.fish();if(k.startsWith('info:')){focus(o.x,o.y);return info(k.slice(5))}if(k.startsWith('guard:'))return guardSheet(+k.slice(6));if(k.startsWith('saint:')){const i=+k.slice(6),d=DEITY.saints[i],I=INFO[d.k];focus(o.x,o.y);return sheet(`<button class="x" aria-label="Close">×</button><h2>${I.zh}</h2><h3>${I.en}</h3><p>${tt(I.t[0],I.t[1])}</p><div class="row"><button class="btn" id="kp"><small>跪拜</small>Kneel and pray</button></div>`,s=>s.querySelector('#kp').onclick=()=>beginPray(null,false,{set:'saints',i}))}
+function hot(k,o){AU.fish();if(k.startsWith('info:')){focus(o.x,o.y);return info(k.slice(5))}if(k.startsWith('guard:'))return guardSheet(+k.slice(6));if(k.startsWith('scush:'))return beginPray(null,false,{set:'saints',i:+k.slice(6)});if(k.startsWith('saint:')){const i=+k.slice(6),d=DEITY.saints[i],I=INFO[d.k];focus(o.x,o.y);return sheet(`<button class="x" aria-label="Close">×</button><h2>${I.zh}</h2><h3>${I.en}</h3><p>${tt(I.t[0],I.t[1])}</p><div class="row"><button class="btn" id="kp"><small>跪拜</small>Kneel and pray</button></div>`,s=>s.querySelector('#kp').onclick=()=>beginPray(null,false,{set:'saints',i}))}
  ({shelf:openShelf,medkneel:openShelf,enter:()=>go('hall',{zoomTo:[50,45]}),burner:()=>{const i=getInc();if(i&&i.place==='courtyard')viewBurner();else info('tiangong')},lamp:startIncense,joss:startIncense,lamps:openWall,kaucim:startKauCim,kneel:()=>pickCushion(),donate:openDonate})[k]?.()}
 
 /* ============================================================ activity stage */
@@ -585,7 +589,7 @@ const GNAME=[['南无大悲观世音菩萨','Namo Great Compassion Guan Yin'],['
 /* deities you can kneel before: image, info key, name to recite, focal x */
 const DEITY={
  hall:[{img:'deity/cundi.jpg',k:'cundi',n:['南无准提菩萨','Namo Cundī Bodhisattva'],fx:.45},{img:'deity/guanyin.jpg',k:'whiterobe',n:['南无观世音菩萨','Namo Guan Shi Yin Bodhisattva'],fx:.3},{img:'deity/damo.jpg',k:'damo',n:['敬礼达摩祖师','Homage to Bodhidharma'],fx:.68},{img:'deity/huatuo.jpg',k:'huatuo',n:['敬礼华佗仙师','Homage to Hua Tuo, the healer'],fx:.62},{img:'deity/kings.jpg',k:'kings',n:['南无四大天王护法','Namo the Four Heavenly Kings'],fx:.55},{img:'deity/cundi_wide.jpg',k:'cundi',n:['南无大悲观世音菩萨','Namo Great Compassion Guan Yin'],fx:.5}],
- saints:[{img:'deity/gy_willow.jpg',k:'gy_willow',n:['南无观世音菩萨','Namo Guan Shi Yin Bodhisattva'],fx:.62},{img:'deity/amitabha.jpg',k:'amitabha',n:['南无阿弥陀佛','Namo Amitābha Buddha'],fx:.5},{img:'deity/mahasthama.jpg',k:'mahasthama',n:['南无大势至菩萨','Namo Mahāsthāmaprāpta Bodhisattva'],fx:.38}],
+ saints:[{img:'deity/gy_willow.jpg',k:'gy_willow',n:['南无观世音菩萨','Namo Guan Shi Yin Bodhisattva'],fx:.62},{img:'deity/amitabha.jpg',k:'amitabha',n:['南无阿弥陀佛','Namo Amitābha Buddha'],fx:.5},{img:'deity/mahasthama.jpg',k:'mahasthama',n:['南无大势至菩萨','Namo Mahāsthāmaprāpta Bodhisattva'],fx:.38},{img:'deity/shakyamuni.jpg',k:'shakyamuni',n:['南无本师释迦牟尼佛','Namo Shakyamuni Buddha, our Original Teacher'],fx:.5}],
  guard:GUARD.map(([k],i)=>({img:GIMG[i],k,n:GNAME[i],fx:.5}))
 };
 let handCache={b:-1,c:null,emb:[]};
@@ -837,6 +841,12 @@ const SHELF=[ // [bay, left%] books stand on shelf surfaces; spine width/height 
  ['zhunti',2,.17],['yaoshi',2,.215]];
 const BAY=[[.09,.266],[.29,.479],[.5,.68],[.7,.893]];
 let readerOn=false;
+const MGY=bgImg('deity/med_gy.jpg');
+function drawReaderFx(dt){const c=$('#reader .rfx');const W=innerWidth,H=innerHeight;if(c.width!==W){c.width=W;c.height=H}const g=c.getContext('2d');g.clearRect(0,0,W,H);if(!MGY.naturalWidth)return;
+ const iw=MGY.naturalWidth,ih=MGY.naturalHeight,s=Math.max(W/iw,H/ih),ox=(W-iw*s)*.5,oy=(H-ih*s)*.3,P=(u,v)=>({x:ox+u*iw*s,y:oy+v*ih*s});
+ startSmoke();const b=P(.5,.607),w=.11*iw*s,hh=w*16/9;g.globalCompositeOperation='lighter';
+ SMV.forEach((v,j)=>{if(v.readyState<2||!v.duration)return;g.globalAlpha=.75*Math.sin(Math.PI*v.currentTime/v.duration);g.drawImage(v,b.x-w/2+(j?w*.06:0),b.y-hh*.98,w*(j?.9:1),hh*(j?.95:1))});
+ g.globalAlpha=1;const f=P(.684,.593);flame(g,f.x,f.y,.024*ih*s,T,2);g.globalCompositeOperation='source-over'}
 function bookById(id){return BOOKS.find(b=>b.id===id)}
 function spine(b,i){const h=[.16,.165,.15,.155,.14,.15,.165,.16][i],w=[.036,.044,.032,.034,.03,.034,.036,.038][i];return{h,w}}
 function openShelf(){closeSheet();AU.init();const v=$('#shelfv');v.hidden=false;hud(false);$('#closeBtn').hidden=false;S.mode='act';
